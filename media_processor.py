@@ -26,7 +26,9 @@ PLATFORM_RATIO_CHOICES = {
     "Website": ["Original", "16:9", "1:1"],
 }
 
-MAX_UNIQUE_FILE_ATTEMPTS = 1000
+SUPPORTED_PLATFORMS = ["Facebook", "Instagram", "X", "Website", "Google Business"]
+DEFAULT_DOCKER_TIMEOUT_SECONDS = 30
+MAX_UNIQUE_FILENAME_ATTEMPTS = 1000
 
 
 def slugify(text: str) -> str:
@@ -40,8 +42,13 @@ class KeywordAnalyzer:
 
 
 class DockerKeywordAnalyzer(KeywordAnalyzer):
-    def __init__(self, docker_image: str = "seo-keyword-analyzer:latest") -> None:
+    def __init__(
+        self,
+        docker_image: str = "seo-keyword-analyzer:latest",
+        timeout_seconds: int = DEFAULT_DOCKER_TIMEOUT_SECONDS,
+    ) -> None:
         self.docker_image = docker_image
+        self.timeout_seconds = timeout_seconds
 
     def analyze(self, image_path: Path) -> list[str]:
         cmd = [
@@ -57,7 +64,7 @@ class DockerKeywordAnalyzer(KeywordAnalyzer):
             cmd,
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=self.timeout_seconds,
             check=True,
         )
         raw = result.stdout.strip()
@@ -163,7 +170,7 @@ class ImageProcessor:
         if not output_path.exists():
             return output_path
         counter = 2
-        while counter <= MAX_UNIQUE_FILE_ATTEMPTS:
+        while counter <= MAX_UNIQUE_FILENAME_ATTEMPTS:
             candidate = output_path.with_name(f"{output_path.stem}-{counter}{output_path.suffix}")
             if not candidate.exists():
                 return candidate

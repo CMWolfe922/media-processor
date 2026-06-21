@@ -12,6 +12,7 @@ from media_processor import (
     ImageProcessor,
     PLATFORM_RATIO_CHOICES,
     SafeKeywordAnalyzer,
+    SUPPORTED_PLATFORMS,
 )
 
 
@@ -45,11 +46,10 @@ class MediaProcessorApp:
         self.file_label.grid(row=0, column=1, padx=12, sticky="w")
 
         ttk.Label(frame, text="Usage Target").grid(row=1, column=0, pady=(16, 8), sticky="w")
-        platform_values = ["Facebook", "Instagram", "X", "Website", "Google Business"]
         platform_menu = ttk.Combobox(
             frame,
             textvariable=self.platform_var,
-            values=platform_values,
+            values=SUPPORTED_PLATFORMS,
             state="readonly",
             width=24,
         )

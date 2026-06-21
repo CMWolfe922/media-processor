@@ -41,6 +41,16 @@ class MediaProcessorTests(unittest.TestCase):
             self.assertEqual(name, "sea-sunset-instagram-optimized.webp")
             self.assertEqual(name.split("-").count("sea"), 1)
 
+    def test_output_name_limits_to_eight_keywords(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            keywords = [f"term{i}" for i in range(1, 11)]
+            processor = ImageProcessor(Path(tmp), StaticAnalyzer(keywords))
+            name = processor.build_output_name(Path("photo.jpg"), "png")
+            self.assertEqual(
+                name,
+                "term1-term2-term3-term4-term5-term6-term7-term8-optimized.png",
+            )
+
     def test_process_images_crops_and_saves_output(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
