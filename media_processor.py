@@ -26,6 +26,8 @@ PLATFORM_RATIO_CHOICES = {
     "Website": ["Original", "16:9", "1:1"],
 }
 
+MAX_UNIQUE_FILE_ATTEMPTS = 1000
+
 
 def slugify(text: str) -> str:
     value = re.sub(r"[^a-zA-Z0-9]+", "-", text).strip("-").lower()
@@ -161,7 +163,7 @@ class ImageProcessor:
         if not output_path.exists():
             return output_path
         counter = 2
-        while counter <= 1000:
+        while counter <= MAX_UNIQUE_FILE_ATTEMPTS:
             candidate = output_path.with_name(f"{output_path.stem}-{counter}{output_path.suffix}")
             if not candidate.exists():
                 return candidate

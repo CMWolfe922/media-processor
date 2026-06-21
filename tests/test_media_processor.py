@@ -39,6 +39,7 @@ class MediaProcessorTests(unittest.TestCase):
             processor = ImageProcessor(Path(tmp), StaticAnalyzer(["sea", "sunset", "sea"]))
             name = processor.build_output_name(Path("photo.jpg"), "webp", ["Instagram"])
             self.assertEqual(name, "sea-sunset-instagram-optimized.webp")
+            self.assertEqual(name.split("-").count("sea"), 1)
 
     def test_process_images_crops_and_saves_output(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
