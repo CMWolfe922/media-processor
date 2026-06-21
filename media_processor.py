@@ -75,7 +75,7 @@ class SafeKeywordAnalyzer(KeywordAnalyzer):
     def analyze(self, image_path: Path) -> list[str]:
         try:
             terms = self.primary.analyze(image_path)
-        except Exception:
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError, OSError):
             terms = []
         if not terms:
             terms = self.fallback.analyze(image_path)
@@ -122,7 +122,7 @@ class ImageProcessor:
         output_format: str,
         extra_keywords: Sequence[str] | None = None,
     ) -> str:
-        keywords = self.analyzer.analyze(image_path)
+        keywords = list(self.analyzer.analyze(image_path))
         if extra_keywords:
             keywords.extend(extra_keywords)
         unique_keywords = list(dict.fromkeys([slugify(item) for item in keywords if item]))
@@ -151,7 +151,8 @@ class ImageProcessor:
 
                 name = self.build_output_name(image_path, output_format, [platform])
                 output_path = self._ensure_unique(destination / name)
-                edited.save(output_path, format=output_format.upper())
+                save_format = "JPEG" if output_format.lower() in {"jpg", "jpeg"} else output_format.upper()
+                edited.save(output_path, format=save_format)
                 saved_files.append(output_path)
 
         return saved_files
@@ -160,8 +161,9 @@ class ImageProcessor:
         if not output_path.exists():
             return output_path
         counter = 2
-        while True:
+        while counter <= 1000:
             candidate = output_path.with_name(f"{output_path.stem}-{counter}{output_path.suffix}")
             if not candidate.exists():
                 return candidate
             counter += 1
+        raise OSError(f"Could not resolve a unique output name for {output_path}")

@@ -2,6 +2,8 @@ from pathlib import Path
 import tempfile
 import unittest
 
+from PIL import Image
+
 from media_processor import ImageProcessor, KeywordAnalyzer, slugify
 
 
@@ -37,6 +39,25 @@ class MediaProcessorTests(unittest.TestCase):
             processor = ImageProcessor(Path(tmp), StaticAnalyzer(["sea", "sunset", "sea"]))
             name = processor.build_output_name(Path("photo.jpg"), "webp", ["Instagram"])
             self.assertEqual(name, "sea-sunset-instagram-optimized.webp")
+
+    def test_process_images_crops_and_saves_output(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            source = tmp_path / "source.png"
+            Image.new("RGB", (1200, 800), "blue").save(source)
+
+            processor = ImageProcessor(tmp_path, StaticAnalyzer(["beach", "sunset"]))
+            output_files = processor.process_images(
+                image_paths=[source],
+                platform="Instagram",
+                ratio_label="1:1",
+                output_format="jpg",
+            )
+
+            self.assertEqual(len(output_files), 1)
+            self.assertTrue(output_files[0].exists())
+            with Image.open(output_files[0]) as result:
+                self.assertEqual(result.size, (800, 800))
 
 
 if __name__ == "__main__":

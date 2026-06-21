@@ -4,6 +4,8 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
+from PIL import UnidentifiedImageError
+
 from media_processor import (
     DockerKeywordAnalyzer,
     FilenameKeywordAnalyzer,
@@ -98,7 +100,7 @@ class MediaProcessorApp:
                 ratio_label=self.ratio_var.get(),
                 output_format=self.format_var.get(),
             )
-        except Exception as exc:
+        except (OSError, ValueError, UnidentifiedImageError) as exc:
             messagebox.showerror("Processing failed", str(exc))
             return
 
